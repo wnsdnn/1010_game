@@ -60,6 +60,9 @@ md = False
 block_id = 100
 block_num = 100
 
+# 클릭한 도형의 사각형 인덱스 값
+click_block_list = 0
+
 # 도형들의 모양들
 blocks = (
     ((0, 0, 1),     
@@ -96,7 +99,7 @@ class Block():
         self.xpos = xpos
         self.ypos = ypos
         self.num = num
-        self.list = [list[0], list[1]]
+        self.list = (list)
 
     def get_rect(self, rect):
         self.rect = rect
@@ -114,7 +117,7 @@ class Block():
 # 게임판 정보를 FILED라는 리스트 안에 집어넣기
 def set_filed():
     for i in range(FILED_HEIGHT):
-        FILED.append([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        FILED.append([0, 0, 0, 0, 0, 0, 0, 0])
 
 # 게임판을 그리는 함수
 def draw_filed():
@@ -146,15 +149,33 @@ def draw_block():
             for x in range(block_width):
                 if blocks[val][y][x] == 0:
                     continue
-                block = Block(FILED_PIECE_SIZE*x + (idx*FILED_PIECE_SIZE*3.7) + 50, FILED_PIECE_SIZE*y + block_y_pos, idx, val, [y, x])
+                block = Block(FILED_PIECE_SIZE*x + (idx*FILED_PIECE_SIZE*3.7) + 50, FILED_PIECE_SIZE*y + block_y_pos, idx, val, (x, y))
                 block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id)
                 block.get_rect(block_rect)
                 block_list.append(block)
 
 
-def fff(num):
+def cordinates(num):
     result = num / FILED_PIECE_SIZE
     return math.floor(result)
+
+
+def line_delete():
+    # for y in range(FILED_HEIGHT):
+    #     yy = 0
+    #     for x in range(FILED_WIDTH):
+    #         if FILED[y][x] == 1:
+    #             yy += 1
+    #     if yy >= FILED_HEIGHT:
+    #         FILED[y] = [0, 0, 0, 0, 0, 0, 0, 0]
+    for y in range(FILED_HEIGHT):
+        xx = 0
+        for x in range(FILED_WIDTH):
+            if FILED[x][y] == 1:
+                xx += 1
+            if xx >= FILED_WIDTH:
+                FILED[x][y] == 0
+
 
 # 게임 실행
 set_filed()
@@ -174,6 +195,8 @@ while running:
 
         for block in block_list:
             if block.rect.collidepoint(event.pos):
+                # print(block.list)
+                click_block_list = block.list
                 block_id = block.id
                 block_num = block.num
 
@@ -181,20 +204,30 @@ while running:
         #     print(block)
         
 
-    if md and event.type ==  pygame.MOUSEMOTION:
+    if md and event.type == pygame.MOUSEMOTION:
         mouse_to_x = pygame.mouse.get_pos()[0] - start_to_x
         mouse_to_y = pygame.mouse.get_pos()[1] - start_to_y
 
 
-    if event.type == pygame.MOUSEBUTTONUP:
+    if md and event.type == pygame.MOUSEBUTTONUP:
         # 게임판 기준으로 현재 마우스의 위치
-        block_x = pygame.mouse.get_pos()[0] - FILED_X_POS
-        block_y = pygame.mouse.get_pos()[1] - FILED_Y_POS
+        block_x = cordinates(pygame.mouse.get_pos()[0] - FILED_X_POS)
+        block_y = cordinates(pygame.mouse.get_pos()[1] - FILED_Y_POS)
 
-        result = (fff(block_x), fff(block_y))
-        print(result)
-        
 
+        if click_block_list != 0 and block_x <= 7 and block_y <= 7 and block_x >= 0 and block_y >= 0:
+            # 게임판에 그릴 도형의 0, 0 시작 위치
+            start_x = block_x - click_block_list[0]
+            start_y = block_y - click_block_list[1]
+            for y in range(block_height):
+                for x in range(block_width):
+                    block_con = blocks[block_num][y][x]
+                    if block_con == 0:
+                        continue
+                    FILED[start_x + x][start_y + y] = 1
+            del random_block[block_id]
+
+        # 값 초기화
         md = False
         start_to_x = 0
         start_to_y = 0
@@ -202,13 +235,12 @@ while running:
         mouse_to_y = 0
         block_id = 100
         block_num = 100
+        click_block = 0
     
     # 배경색 칠하기
     screen.fill((225, 255, 255))
 
-    # 현재 점수 나타내기
-    total_score = game_font.render(score_str, True, (0, 0, 0))
-    screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
+    
 
     # 도형 3개를 다 쓰면 다시 도형 만드는 함수
     if len(random_block) <= 0:  
@@ -217,6 +249,11 @@ while running:
     # 게임판이랑 도형 그리기
     draw_filed()
     draw_block()
+    line_delete()
+
+    # 현재 점수 나타내기
+    total_score = game_font.render(score_str, True, (0, 0, 0))
+    screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
     
 
     # running = False
