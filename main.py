@@ -215,16 +215,22 @@ while running:
             # 게임판에 그릴 도형의 0, 0 시작 위치
             start_x = block_x - click_block_list[0]
             start_y = block_y - click_block_list[1]
-            for y in range(block_height):
-                for x in range(block_width):
-                    block_con = blocks[block_num][y][x]
-                    if block_con == 0:
-                        continue
-                    FILED[start_x + x][start_y + y] = 1
-            for block in block_list:
-                if block.id == block_id:
-                    del block
-            del random_block[block_id]
+
+            # 게임판에 그릴 도형의 2, 2 시작 위치
+            last_x = block_x + (2 - click_block_list[0])
+            last_y = block_y + (2 - click_block_list[1])
+
+            if start_x >= 0 and start_y >= 0 and last_x <= 7 and last_y <= 7:
+                for y in range(block_height):
+                    for x in range(block_width):
+                        block_con = blocks[block_num][y][x]
+                        if block_con == 0:
+                            continue
+                        FILED[start_x + x][start_y + y] = 1
+                for block in block_list:
+                    if block.id == block_id:
+                        del block
+                del random_block[block_id]
             # for block in block_list:
             #     print(block.id)
 
