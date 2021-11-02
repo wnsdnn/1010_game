@@ -8,6 +8,7 @@ pygame.init()
 screen_width = 550
 screen_height = 700
 screen = pygame.display.set_mode((screen_width, screen_height)) 
+screen_rect = screen.get_rect()
 
 game_font = pygame.font.Font(None, 40)
 
@@ -83,14 +84,20 @@ blocks = (
     ((0, 1, 0),
      (0, 1, 0),
      (0, 1, 0)),
-    ((1, 0, 0),
-     (1, 0, 0),
-     (1, 1, 1)),
     ((0, 0, 0),
      (1, 0, 0),
      (1, 1, 1)),
     ((0, 0, 0),
      (0, 0, 0),
+     (0, 1, 0)),
+    ((0, 0, 0),
+     (0, 1, 0),
+     (0, 1, 0)),
+    ((0, 0, 0),
+     (0, 1, 1),
+     (0, 1, 0)),
+    ((0, 0, 0),
+     (1, 1, 0),
      (0, 1, 0)),
 )
 
@@ -172,6 +179,7 @@ def draw_block():
 
 
 def cordinates(num):
+    # n =  num % FILED_PIECE_SIZE
     result = num / FILED_PIECE_SIZE
     return math.floor(result)
 
@@ -182,10 +190,8 @@ def size():
         for x in range(len(blocks[block_num][y])):
             if blocks[block_num][y][x] == 1:
                 block_result.append((x, y))
-    min_x = 2
-    max_x = 0
-    min_y = 2
-    max_y = 0
+    min_x, min_y = 2, 2
+    max_x, max_y = 0, 0
     for i in block_result:
         if min_x > i[0]:
             min_x = i[0]
@@ -315,3 +321,11 @@ while running:
 
     
 pygame.quit()
+
+
+
+#  남은일 
+#  1. 도형 삽입할때 안 겹치게 기능 구현
+#  2. 게임 오버 기능 구현
+#  3. 게임 플레이나 기능구현시 나오는 오류 수정
+#  4. 디자인 예쁘게 수정하기

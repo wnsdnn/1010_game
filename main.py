@@ -8,6 +8,7 @@ pygame.init()
 screen_width = 550
 screen_height = 700
 screen = pygame.display.set_mode((screen_width, screen_height)) 
+screen_rect = screen.get_rect()
 
 game_font = pygame.font.Font(None, 40)
 
@@ -65,34 +66,43 @@ click_block_list = 0
 
 # 도형들의 모양들
 blocks = (
+    ((0, 0, 0),     
+     (0, 0, 0),    # 0
+     (0, 0, 0)),
     ((0, 0, 1),     
-     (0, 0, 1), 
+     (0, 0, 1),    # 1
      (1, 1, 1)),
     ((0, 0, 0),
-     (0, 0, 0),
+     (0, 0, 0),    # 2
      (1, 1, 1)),
     ((1, 1, 1),       
-     (1, 1, 1), 
+     (1, 1, 1),    # 3
      (1, 1, 1)),
     ((1, 1, 1),
-     (0, 0, 1),
+     (0, 0, 1),    # 4
      (0, 0, 1)),
     ((1, 0, 0),
-     (1, 0, 0),
+     (1, 0, 0),    # 5
      (1, 1, 1)),
     ((0, 1, 0),
-     (0, 1, 0),
+     (0, 1, 0),    # 6
      (0, 1, 0)),
-    ((1, 0, 0),
-     (1, 0, 0),
+    ((0, 0, 0),
+     (1, 0, 0),    # 7
      (1, 1, 1)),
     ((0, 0, 0),
-     (1, 0, 0),
-     (1, 1, 1)),
-    ((0, 0, 0),
-     (0, 0, 0),
+     (0, 0, 0),    # 8
      (0, 1, 0)),
-)
+    ((0, 0, 0),
+     (0, 1, 0),    # 9
+     (0, 1, 0)),
+    ((0, 0, 0),
+     (0, 1, 1),    # 10
+     (0, 1, 0)),
+    ((0, 0, 0),
+     (0, 1, 1),    # 11
+     (0, 0, 1)),
+) 
 
 # 도형들 만드는 클래스
 class Borad():
@@ -155,7 +165,7 @@ def draw_filed():
 # 게임에 사용할 도형 3개 배열에 넣는 함수
 def set_block():
     for i in range(3):
-        random_block.append(random.randrange(len(blocks)))
+        random_block.append(random.randrange(1, len(blocks)))
 
 
 # 도형을 그려 넣는 함수
@@ -165,15 +175,22 @@ def draw_block():
             for x in range(block_width):
                 if blocks[val][y][x] == 0:
                     continue
-                block = Block(FILED_PIECE_SIZE*x + (idx*FILED_PIECE_SIZE*3.7) + 50, FILED_PIECE_SIZE*y + block_y_pos, idx, val, (x, y))
+                block = Block(
+                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*3.7) + 50, 
+                    FILED_PIECE_SIZE*y + block_y_pos, 
+                    idx, val, (x, y))
                 block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id)
                 block.get_rect(block_rect)
                 block_list.append(block)
 
 
 def cordinates(num):
+    n =  num % FILED_PIECE_SIZE
     result = num / FILED_PIECE_SIZE
-    return math.floor(result)
+    if n > FILED_PIECE_SIZE:
+        return math.ceil(result)
+    else:
+        return math.floor(result)
 
 
 def size():
@@ -182,10 +199,8 @@ def size():
         for x in range(len(blocks[block_num][y])):
             if blocks[block_num][y][x] == 1:
                 block_result.append((x, y))
-    min_x = 2
-    max_x = 0
-    min_y = 2
-    max_y = 0
+    min_x, min_y = 2, 2
+    max_x, max_y = 0, 0
     for i in block_result:
         if min_x > i[0]:
             min_x = i[0]
@@ -200,6 +215,7 @@ def size():
 
 # 게임 실행
 set_filed()
+set_block()
 
 while running:
     dt = clock.tick(60)
@@ -219,6 +235,8 @@ while running:
                 md = False
 
         for block in block_list:
+            block.rect.left = block.xpos
+            block.rect.top = block.ypos
             if block.rect.collidepoint(event.pos):
                 click_block_list = block.list
                 block_id = block.id
@@ -236,9 +254,8 @@ while running:
         block_y = cordinates(pygame.mouse.get_pos()[1] - FILED_Y_POS)      
 
         # min_x, max_x, min_y, max_y
-        block_size, arr = size()
-        # print(block_size)
-        # print(arr)
+        if block_num != 100:
+            block_size, arr = size()
 
         if click_block_list != 0 and block_x <= 7 and block_y <= 7 and block_x >= 0 and block_y >= 0:
             # 게임판에 그릴 도형의 시작 위치
@@ -251,22 +268,36 @@ while running:
             last_x = start_x + (block_size[1] - block_size[0])
             last_y = start_y + (block_size[3] - block_size[2])
 
-            # print(start_x, last_x)
-            # print(start_y, last_y)
-
-            if start_x >= 0 and start_y >= 0 and last_x <= 7 and last_y <= 7:
+            if block_num != 100 and start_x >= 0 and start_y >= 0 and last_x <= 7 and last_y <= 7:
+                overlapping = False
+                filed_piece_list = []
                 for y in range((last_y - start_y) + 1):
                     for x in range((last_x - start_x) + 1):
                         if blocks[block_num][block_size[2] + y][block_size[0] + x] == 0:
                             continue
-                        FILED[start_x + x][start_y + y] = 1
-                for block in block_list:
-                    if block.id == block_id:
-                        del block
-                del random_block[block_id]
+                        if FILED[start_x + x][start_y + y] == 1:
+                            overlapping = True
+                            filed_piece_list.clear()
+                            break
+                        filed_piece_list.append((start_x + x, start_y + y))
+                    else:
+                        continue
+                    break
+
+                if not overlapping:
+                    for filed in filed_piece_list:
+                        FILED[filed[0]][filed[1]] = 1
+                        
+                    for block in block_list:
+                        if block.id == block_id:
+                            del block
+                    for idx, val in enumerate(random_block):
+                        if idx == block_id:
+                            random_block[idx] = 0
             
         # 값 초기화
         md = False
+        block_checked = False
         start_to_x = 0
         start_to_y = 0
         mouse_to_x = 0
@@ -279,8 +310,12 @@ while running:
     screen.fill((225, 255, 255))
 
     # 도형 3개를 다 쓰면 다시 도형 만드는 함수
-    if len(random_block) <= 0:  
+    # print(random_block)
+    if random_block == [0, 0, 0]:
+        random_block.clear()  
+        block_list.clear()
         set_block()
+    
 
     # 게임판이랑 도형 그리기
     draw_filed()
@@ -315,3 +350,12 @@ while running:
 
     
 pygame.quit()
+
+
+
+#  남은일 
+#  1. 도형 삽입할때 안 겹치게 기능 구현
+#  2. 게임 오버 기능 구현
+#  3. 마우스 이벤트 오류 안나게 고치기
+#  4. 게임 플레이나 기능구현시 나오는 오류 수정
+#  5. 디자인 예쁘게 수정하기    

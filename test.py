@@ -1,38 +1,17 @@
-# FILED = [
-#     [0, 0, 1, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0, 0, 0, 0]
-# ]
+# import math
+
+# FILED_PIECE_SIZE = 35
+
+# def cordinates(num):
+#     n =  num % FILED_PIECE_SIZE
+#     result = num / FILED_PIECE_SIZE
+#     if n > FILED_PIECE_SIZE:
+#         return math.ceil(result)
+#     else:
+#         return math.floor(result)
+
+    
+# print(cordinates(145))
 
 
-# FILED_HEIGHT = 8
-# FILED_WIDTH = 8
-
-
-
-# for y in range(FILED_HEIGHT):
-#     xx = 0
-#     for x in range(FILED_WIDTH):
-#         if FILED[x][y] == 1:
-#             xx += 1
-#         if xx >= FILED_WIDTH:
-#             for x in range(FILED_WIDTH):
-#                 print(FILED[x][y])
-#                 FILED[x][y] = 0
-
-# print(FILED)
-
-a = (
-    (0),
-    (0),
-    (0)
-)
-# for i in range(2):
-#     print(i)
-# aa = (1, 1, 1)
-print(a)
+print([] is [0, 0, 0])
