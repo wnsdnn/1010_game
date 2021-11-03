@@ -11,6 +11,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 screen_rect = screen.get_rect()
 
 game_font = pygame.font.Font(None, 40)
+game_over_font = pygame.font.Font(None, 80)
 
 pygame.display.set_caption("1010 game")
 
@@ -38,7 +39,7 @@ FILED_PIECE_SIZE = 45  # 게임판에 들어가는 사각형의 크기
 FILED_X_POS = (screen_width / 2) - (FILED_PIECE_SIZE * FILED_WIDTH) / 2
 FILED_Y_POS = FILED_PIECE_SIZE * 2.2
 # 도형들의 y좌표
-block_y_pos = screen_height - 230
+block_y_pos = screen_height - 300
 # 점수
 score = 0
 
@@ -72,6 +73,8 @@ block_num = 100
 
 # 클릭한 도형의 사각형 인덱스 값
 click_block_list = 0
+
+game_result = "Game Over"
 
 # 도형들의 모양들
 blocks = (
@@ -158,7 +161,7 @@ blocks = (
      (0, 0, 1, 0),    
      (0, 0, 0, 0)),
     ((0, 1, 0, 0),
-     (0, 1, 1, 0),    # 12
+     (0, 1, 1, 0),    # 20
      (0, 1, 0, 0),    
      (0, 0, 0, 0)),
 ) 
@@ -206,7 +209,7 @@ def set_filed():
         FILED2 = []
         for j in range(FILED_WIDTH):
             FILED2.append(0)
-        FILED.append(FILED2)
+        FILED.append(FILED2)  
 
 # 게임판을 그리는 함수
 def draw_filed():
@@ -239,7 +242,7 @@ def draw_block():
                     continue
                 block = Block(
                     FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*3.5) + 70, 
-                    FILED_PIECE_SIZE*y + block_y_pos, 
+                    FILED_PIECE_SIZE*y + block_y_pos + (FILED_PIECE_SIZE*block_height / 2), 
                     idx, val, (x, y))
                 block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id)
                 block.get_rect(block_rect)
@@ -258,11 +261,11 @@ def cordinates(num1, num2):
 
     return result
 
-def size():
+def size(num):
     block_result = []
-    for y in range(len(blocks[block_num])):
-        for x in range(len(blocks[block_num][y])):
-            if blocks[block_num][y][x] == 1:
+    for y in range(len(blocks[num])):
+        for x in range(len(blocks[num][y])):
+            if blocks[num][y][x] == 1:
                 block_result.append((x, y))
     min_x, min_y = block_width - 1, block_width - 1
     max_x, max_y = 0, 0
@@ -278,12 +281,34 @@ def size():
     result = ((min_x, max_x, min_y, max_y), block_result)
     return result
 
+def gameover():
+    for idx, random_num in enumerate(random_block):
+        overlap = False
+        if random_num == 0:
+            continue
+        block_size, arr = size(random_num)
+        block_y_len = block_size[3] - block_size[2] + 1
+        block_x_len = block_size[1] - block_size[0] + 1
+        
+        for filed_y in range(FILED_HEIGHT - block_y_len):
+            for filed_x in range(FILED_WIDTH - block_x_len):
+                if FILED[filed_y][filed_x] == 0:
+                    for idx, val in enumerate(arr):
+                        if FILED[filed_y + (val[1]- block_size[2])][filed_x + (val[0] - block_size[0])] == 0:
+                            overlap = True
+                    if not overlap:
+                        return True
+
+    return True
+
+
 # 게임 실행
 set_filed()
 set_block()
 
 while running:
     dt = clock.tick(60)
+    running = gameover()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -294,6 +319,11 @@ while running:
         start_to_x = pygame.mouse.get_pos()[0]
         start_to_y = pygame.mouse.get_pos()[1]
         md = True
+
+        for borad in borad_list:
+            if borad.rect.collidepoint(event.pos):
+                if count == 0:
+                    md = False
 
         for block in block_list:
             block.rect.left = block.xpos
@@ -314,7 +344,7 @@ while running:
     if md and event.type == pygame.MOUSEBUTTONUP:
         count += 1
 
-        if count >= 2:
+        if count >= 2 and block_cor != 0:
             # 게임판 기준으로 현재 마우스의 위치
             blo = cordinates(pygame.mouse.get_pos()[0] - FILED_X_POS, pygame.mouse.get_pos()[1] - FILED_Y_POS)
             block_x = blo[0]
@@ -322,7 +352,7 @@ while running:
 
             # min_x, max_x, min_y, max_y
             if block_num != 100:
-                block_size, arr = size()
+                block_size, arr = size(block_num)
 
             if click_block_list != 0 and block_x <= FILED_HEIGHT - 1 and block_y <= FILED_HEIGHT - 1 and block_x >= 0 and block_y >= 0:
                 # 게임판에 그릴 도형의 시작 위치
@@ -377,6 +407,8 @@ while running:
     
     # 배경색 칠하기
     screen.fill((255, 255, 255))
+    screen.blit(logo, (logo_xpos, logo_ypos))
+
 
     # 도형 3개를 다 쓰면 다시 도형 만드는 함수
     random_filed = []
@@ -415,16 +447,23 @@ while running:
     total_score = game_font.render("Score: %s" % (score), True, (0, 0, 0))
     screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
 
-    screen.blit(logo, (logo_xpos, logo_ypos))
     
 
     # running = False
     pygame.display.update()
 
     
+# 게임 오버 메세지
+
+msg = game_over_font.render(game_result, True, (255, 0, 0))
+msg_rect = msg.get_rect(center=(int(screen_width / 2), int(screen_height / 2 - 60)))
+screen.blit(msg, msg_rect)
+pygame.display.update()
+
+# 2초 대기
+pygame.time.delay(2000)
+
 pygame.quit()
-
-
 
 #  남은일 
 #  1. 게임 오버 기능 구현
