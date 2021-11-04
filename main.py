@@ -103,7 +103,7 @@ blocks = (
      (0, 0, 1, 0),    # 4
      (0, 0, 1, 0),    
      (0, 0, 0, 0)),
-    ((1, 0, 0, 0),
+    ((0, 0, 0, 0),
      (1, 0, 0, 0),    # 5
      (1, 0, 0, 0),    
      (1, 1, 1, 0),
@@ -289,7 +289,7 @@ def size(num):
     result = ((min_x, max_x, min_y, max_y), block_result)
     return result
 
-############################### 오류 남 ######################################
+
 def gameover():
     option = []
     for idx, random_num in enumerate(random_block):
@@ -299,24 +299,18 @@ def gameover():
         block_y_len = block_size[3] - block_size[2] + 1
         block_x_len = block_size[1] - block_size[0] + 1
         
-        # print(FILED_HEIGHT - block_y_len)
-        # print(FILED_WIDTH - block_x_len)
-        # for idx, val in enumerate(arr):
-        #     print(val[1]- block_size[2], val[0] - block_size[0])
-        # print(block_size)
-        # return False
         overlap = False
+        # 게임판 10*10 총 100개의 게임판에서 가로 세로 도형의 크기를 빼고 연산
         for filed_y in range(FILED_HEIGHT - block_y_len+1):
-            for filed_x in range(FILED_WIDTH - block_x_len+1):
+            for filed_x in range(FILED_WIDTH - block_x_len + 1):
                 block_count = 0
                 for idx, val in enumerate(arr):
                     if FILED[filed_y + (val[1]- block_size[2])][filed_x + (val[0] - block_size[0])] == 0:
                         block_count += 1
-                # print(overlap)
                 if block_count == len(arr):
                     overlap = True
-                # print(block_count, len(arr))
-
+                # print(filed_y, filed_x, block_count)
+        
         option.append(overlap)
     # print(option)
 
@@ -328,7 +322,6 @@ def gameover():
             return False
     return True
 
-
 # 게임 실행
 set_filed()
 set_block()
@@ -336,7 +329,6 @@ set_block()
 while running:
     dt = clock.tick(60)
     running = gameover()
-    # gameover()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -494,9 +486,3 @@ pygame.display.update()
 pygame.time.delay(2000)
 
 pygame.quit()
-
-#  남은일 
-#  1. 게임 오버 기능 구현
-#  2. 마우스 이벤트 오류 안나게 고치기
-#  3. 게임 플레이나 기능구현시 나오는 오류 수정
-#  4. 디자인 예쁘게 수정하기
