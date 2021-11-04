@@ -76,6 +76,10 @@ click_block_list = 0
 
 game_result = "Game Over"
 
+GRAY = (100, 100, 100)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+
 # 도형들의 모양들
 blocks = (
     # 0번째는 아무것도 없음(도형을 사용해도 안 밀리도록 도형 사용시 0번째 지정)
@@ -193,13 +197,13 @@ class Block():
     def get_rect(self, rect):
         self.rect = rect
 
-    def draw_block(self, mouse_xpos, mouse_ypos, id):
+    def draw_block(self, mouse_xpos, mouse_ypos, id, color):
         xpos = 0
         ypos = 0
         if self.id == id:
             xpos = mouse_xpos
             ypos = mouse_ypos
-        block = pygame.draw.rect(screen, (0, 0, 0), (self.xpos + xpos, self.ypos + ypos, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
+        block = pygame.draw.rect(screen, color, (self.xpos + xpos, self.ypos + ypos, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
         return block
 
 
@@ -231,6 +235,7 @@ def draw_filed():
 def set_block():
     for i in range(block_len):
         random_block.append(random.randrange(1, len(blocks)))
+        # random_block.append(4)
 
 
 # 도형을 그려 넣는 함수
@@ -244,7 +249,10 @@ def draw_block():
                     FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*3.5) + 70, 
                     FILED_PIECE_SIZE*y + block_y_pos + (FILED_PIECE_SIZE*block_height / 2), 
                     idx, val, (x, y))
-                block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id)
+                color = GRAY
+                if count == 1 and block.id == block_id:
+                    color = BLACK
+                block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, color)
                 block.get_rect(block_rect)
                 block_list.append(block)
 
@@ -281,24 +289,43 @@ def size(num):
     result = ((min_x, max_x, min_y, max_y), block_result)
     return result
 
+############################### 오류 남 ######################################
 def gameover():
+    option = []
     for idx, random_num in enumerate(random_block):
-        overlap = False
         if random_num == 0:
             continue
         block_size, arr = size(random_num)
         block_y_len = block_size[3] - block_size[2] + 1
         block_x_len = block_size[1] - block_size[0] + 1
         
+        # print(FILED_HEIGHT - block_y_len)
+        # print(FILED_WIDTH - block_x_len)
+        # for idx, val in enumerate(arr):
+        #     print(val[1]- block_size[2], val[0] - block_size[0])
+        # print(block_size)
+        # return False
+        overlap = False
         for filed_y in range(FILED_HEIGHT - block_y_len):
             for filed_x in range(FILED_WIDTH - block_x_len):
-                if FILED[filed_y][filed_x] == 0:
-                    for idx, val in enumerate(arr):
-                        if FILED[filed_y + (val[1]- block_size[2])][filed_x + (val[0] - block_size[0])] == 0:
-                            overlap = True
-                    if not overlap:
-                        return True
+                block_count = 0
+                for idx, val in enumerate(arr):
+                    if FILED[filed_y + (val[1]- block_size[2])][filed_x + (val[0] - block_size[0])] == 0:
+                        block_count += 1
+                # print(overlap)
+                if block_count == len(arr):
+                    overlap = True
+                # print(block_count, len(arr))
 
+        option.append(overlap)
+    # print(option)
+
+    for block_bool in option:
+        false_count = 0
+        if not block_bool:
+            false_count += 1
+        if false_count == len(option):
+            return False
     return True
 
 
@@ -309,15 +336,18 @@ set_block()
 while running:
     dt = clock.tick(60)
     running = gameover()
+    # gameover()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            game_result = "QUIT"
             running = False
 
     # 마우스 이벤트
     if event.type == pygame.MOUSEBUTTONDOWN:
-        start_to_x = pygame.mouse.get_pos()[0]
-        start_to_y = pygame.mouse.get_pos()[1]
+        if count == 0:
+            start_to_x = pygame.mouse.get_pos()[0]
+            start_to_y = pygame.mouse.get_pos()[1]
         md = True
 
         for borad in borad_list:
