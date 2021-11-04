@@ -306,8 +306,8 @@ def gameover():
         # print(block_size)
         # return False
         overlap = False
-        for filed_y in range(FILED_HEIGHT - block_y_len):
-            for filed_x in range(FILED_WIDTH - block_x_len):
+        for filed_y in range(FILED_HEIGHT - block_y_len+1):
+            for filed_x in range(FILED_WIDTH - block_x_len+1):
                 block_count = 0
                 for idx, val in enumerate(arr):
                     if FILED[filed_y + (val[1]- block_size[2])][filed_x + (val[0] - block_size[0])] == 0:
@@ -320,8 +320,8 @@ def gameover():
         option.append(overlap)
     # print(option)
 
+    false_count = 0
     for block_bool in option:
-        false_count = 0
         if not block_bool:
             false_count += 1
         if false_count == len(option):
