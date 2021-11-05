@@ -2,6 +2,8 @@ import pygame
 import random
 import math
 
+from pygame.rect import Rect
+
 pygame.init()
 
 # 전역 변수들
@@ -211,6 +213,9 @@ class Block():
 def set_filed():
     for i in range(FILED_HEIGHT):
         FILED2 = []
+        # if i == 3:
+        #     FILED2 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        # else:
         for j in range(FILED_WIDTH):
             FILED2.append(0)
         FILED.append(FILED2)  
@@ -235,7 +240,7 @@ def draw_filed():
 def set_block():
     for i in range(block_len):
         random_block.append(random.randrange(1, len(blocks)))
-        # random_block.append(4)
+        # random_block.append(5)
 
 
 # 도형을 그려 넣는 함수
@@ -305,14 +310,13 @@ def gameover():
             for filed_x in range(FILED_WIDTH - block_x_len + 1):
                 block_count = 0
                 for idx, val in enumerate(arr):
-                    if FILED[filed_y + (val[1]- block_size[2])][filed_x + (val[0] - block_size[0])] == 0:
+                    # print(val[1], val[0])
+                    if FILED[filed_x + (val[0]- block_size[0])][filed_y + (val[1] - block_size[2])] == 0:
                         block_count += 1
                 if block_count == len(arr):
                     overlap = True
-                # print(filed_y, filed_x, block_count)
         
         option.append(overlap)
-    # print(option)
 
     false_count = 0
     for block_bool in option:
@@ -341,16 +345,12 @@ while running:
             start_to_x = pygame.mouse.get_pos()[0]
             start_to_y = pygame.mouse.get_pos()[1]
         md = True
-
-        for borad in borad_list:
-            if borad.rect.collidepoint(event.pos):
-                if count == 0:
-                    md = False
-
+        
         for block in block_list:
             block.rect.left = block.xpos
             block.rect.top = block.ypos
             if block.rect.collidepoint(event.pos):
+                # 마우스를 클릭한 사각형 안에서의 x, y값
                 block_cor = (event.pos[0] - block.xpos, event.pos[1] - block.ypos)
                 click_block_list = block.list
                 block_id = block.id
@@ -364,7 +364,16 @@ while running:
 
 
     if md and event.type == pygame.MOUSEBUTTONUP:
-        count += 1
+        # 블럭의 위치 정보
+        borad_rect = Rect(FILED_X_POS, FILED_Y_POS, FILED_PIECE_SIZE*10, FILED_PIECE_SIZE*10)
+            
+        # 블럭을 클릭하거나 게임판을 클릭 했을때만 실행
+        if block_cor != 0 or borad_rect.collidepoint(event.pos):
+            # 만약 게임판을 처음으로 클릭한거면 count는 안 올라감
+            if borad_rect.collidepoint(event.pos) and count == 0:
+                count = 0
+            else:
+                count += 1
 
         if count >= 2 and block_cor != 0:
             # 게임판 기준으로 현재 마우스의 위치
@@ -425,6 +434,7 @@ while running:
             block_id = 100
             block_num = 100
             click_block = 0
+            click_block_list = 0
         md = False
     
     # 배경색 칠하기
@@ -446,37 +456,44 @@ while running:
     draw_filed()
     draw_block()
 
-    # 한줄 채워지면 삭제
+    # 한줄이 채워지면 채워진 줄 인덱스를 저장
+    line_y = []
+    line_x = []
     for y in range(FILED_HEIGHT):
-        yy = 0
-        xx = 0
+        y_count = 0
+        x_count = 0
         for x in range(FILED_WIDTH):
             if FILED[y][x] == 1:
-                yy += 1
+                y_count += 1
 
             if FILED[x][y] == 1:
-                xx += 1
-                if xx >= FILED_WIDTH:
-                    for x in range(FILED_WIDTH):
-                        FILED[x][y] = 0
-                    score += 10
+                x_count += 1
+            if x_count >= FILED_WIDTH:
+                line_x.append(y)
 
-        if yy >= FILED_HEIGHT:
-            FILED[y] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            score += 10
+        if y_count >= FILED_HEIGHT:
+            line_y.append(y)
+
+    # 줄 인덱스에서 인덱스들을 가져와 지우기
+    for y in range(FILED_HEIGHT):
+        for liy in line_y:
+            if y == liy:
+                FILED[y] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for x in range(FILED_WIDTH):
+            for lix in line_x:
+                if x == lix:
+                    FILED[y][x] = 0
+    score += 10*(len(line_x) + len(line_y))
 
     # 현재 점수 나타내기
     total_score = game_font.render("Score: %s" % (score), True, (0, 0, 0))
     screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
 
-    
-
     # running = False
     pygame.display.update()
 
-    
-# 게임 오버 메세지
 
+# 게임 오버 메세지
 msg = game_over_font.render(game_result, True, (255, 0, 0))
 msg_rect = msg.get_rect(center=(int(screen_width / 2), int(screen_height / 2 - 60)))
 screen.blit(msg, msg_rect)
