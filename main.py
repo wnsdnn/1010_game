@@ -1,7 +1,7 @@
 import pygame
+import json
 import random
 import math
-from pygame.draw import line
 
 from pygame.rect import Rect
 
@@ -220,13 +220,13 @@ class Block():
     def get_rect(self, rect):
         self.rect = rect
 
-    def draw_block(self, mouse_xpos, mouse_ypos, id, color):
+    def draw_block(self, mouse_xpos, mouse_ypos, id, color, line):
         xpos = 0
         ypos = 0
         if self.id == id:
             xpos = mouse_xpos
             ypos = mouse_ypos
-        block = pygame.draw.rect(screen, color, (self.xpos + xpos, self.ypos + ypos, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
+        block = pygame.draw.rect(screen, color, (self.xpos + xpos, self.ypos + ypos, FILED_PIECE_SIZE, FILED_PIECE_SIZE), line)
         return block
 
 
@@ -291,9 +291,22 @@ def draw_block():
                 color = COLOR[block_color - 1]
                 # if count == 1 and block.id == block_id:
                 #     color = BLACK
-                block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, color)
+                block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, color, 0)
                 block.get_rect(block_rect)
                 block_list.append(block)
+
+def draw_block2():
+    for idx, val in enumerate(tuple(random_block)):
+        for y in range(block_height):
+            for x in range(block_width):
+                if blocks[val][y][x] == 0:
+                    continue
+                block = Block(
+                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*3.5) + 70, 
+                    FILED_PIECE_SIZE*y + block_y_pos + (FILED_PIECE_SIZE*block_height / 2), 
+                    idx, val, (x, y))
+                block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, (0, 0, 0), 1)
+                block.get_rect(block_rect)
 
 
 def cordinates(num1, num2):
@@ -495,6 +508,7 @@ while running:
     draw_filed()
     draw_filed2()
     draw_block()
+    draw_block2()
 
     # 한줄이 채워지면 채워진 줄 인덱스를 저장
     line_y = []
@@ -550,7 +564,26 @@ pygame.display.update()
 
 # 2초 대기
 pygame.time.delay(2000)
+
+
 print("게임 오버!")
 print("총 점수: ",  score)
+
+
+with open("C:/Users/User/Desktop/1010_game/js/record.json") as json_file:
+    json_data = json.load(json_file)
+    score_obj = json_data["score"]
+
+    score_arr = []
+    score_arr.extend(score_obj)
+    score_arr.append(score)
+
+    sc_obj = dict()
+    sc_obj["score"] = score_arr
+    
+    with open("C:/Users/User/Desktop/1010_game/js/record.json", 'w', encoding='utf-8') as make_file:
+        json.dump(sc_obj, make_file, indent="\t")
+
+
 
 pygame.quit()
