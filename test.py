@@ -15,10 +15,19 @@
 
 
 
-option = []
+# option = []
 
-op = True
-for i in range(3):
-    option.append(op)
+# op = True
+# for i in range(3):
+#     option.append(op)
 
-print(option)
+# print(option)
+
+
+import json
+
+with open("C:/Users/User/Desktop/1010_game/js/record.json") as json_file:
+    json_data = json.load(json_file)
+
+    score_obj = json_data["score_object"]["score"]
+    print(score_obj)

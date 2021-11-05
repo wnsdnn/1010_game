@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+from pygame.draw import line
 
 from pygame.rect import Rect
 
@@ -72,15 +73,27 @@ md = False
 # 도형들의 인덱스 번호와 모양 정보가 있는 변수들
 block_id = 100
 block_num = 100
+block_color = 100
 
 # 클릭한 도형의 사각형 인덱스 값
 click_block_list = 0
 
 game_result = "Game Over"
 
+# 색깔
+COLOR = (
+    (255, 0, 0),        # RED
+    (117, 255, 0),      # YELLOW GREEN
+    (255, 168, 0),      # ORANGE
+    (0, 0, 255),        # BLUE
+    (0, 128, 0),        # GREEN
+    (102, 0, 153),      # PURUL
+    (255, 52, 123),    # PINK
+)
+
 GRAY = (100, 100, 100)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
+WHITE = (255, 255, 255)
 
 # 도형들의 모양들
 blocks = (
@@ -96,79 +109,87 @@ blocks = (
     ((0, 0, 0, 0),
      (0, 0, 0, 0),    # 2
      (0, 0, 0, 0),    
-     (1, 1, 1, 1)),
-    ((1, 1, 1, 0),    
-     (1, 1, 1, 0),    # 3
-     (1, 1, 1, 0),    
+     (2, 2, 2, 2)),
+    ((3, 3, 3, 0),    
+     (3, 3, 3, 0),    # 3
+     (3, 3, 3, 0),    
      (0, 0, 0, 0)),
-    ((1, 1, 1, 0),
-     (0, 0, 1, 0),    # 4
-     (0, 0, 1, 0),    
+    ((4, 4, 4, 0),
+     (0, 0, 4, 0),    # 4
+     (0, 0, 4, 0),    
      (0, 0, 0, 0)),
     ((0, 0, 0, 0),
-     (1, 0, 0, 0),    # 5
-     (1, 0, 0, 0),    
-     (1, 1, 1, 0),
+     (5, 0, 0, 0),    # 5
+     (5, 0, 0, 0),    
+     (5, 5, 5, 0),
      (0, 0, 0, 0)),    
-    ((0, 1, 0, 0),
-     (0, 1, 0, 0),    # 6
-     (0, 1, 0, 0),    
-     (0, 1, 0, 0)),
+    ((0, 6, 0, 0),
+     (0, 6, 0, 0),    # 6
+     (0, 6, 0, 0),    
+     (0, 6, 0, 0)),
     ((0, 0, 0, 0),
      (0, 0, 0, 0),    # 7
      (0, 0, 0, 0),    
-     (0, 1, 1, 0)),
+     (0, 7, 7, 0)),
     ((0, 0, 0, 0),
      (0, 0, 0, 0),    # 8
      (0, 0, 0, 0),    
      (0, 1, 0, 0)),
-    ((0, 1, 0, 0),
-     (0, 1, 0, 0),    # 9
-     (0, 1, 0, 0),    
-     (0, 1, 0, 0)),
-    ((0, 1, 1, 0),
-     (0, 1, 0, 0),    # 10
+    ((0, 2, 0, 0),
+     (0, 2, 0, 0),    # 9
+     (0, 2, 0, 0),    
+     (0, 2, 0, 0)),
+    ((0, 3, 3, 0),
+     (0, 3, 0, 0),    # 10
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-    ((0, 1, 1, 0),
-     (0, 0, 1, 0),    # 11
+    ((0, 4, 4, 0),
+     (0, 0, 4, 0),    # 11
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-    ((1, 1, 1, 0),
-     (0, 1, 0, 0),    # 12
+    ((5, 5, 5, 0),
+     (0, 5, 0, 0),    # 12
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-    ((0, 1, 0, 0),
-     (1, 1, 1, 0),    # 13
+    ((0, 6, 0, 0),
+     (6, 6, 6, 0),    # 13
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-    ((0, 1, 0, 0),
-     (0, 1, 0, 0),    # 14
-     (1, 1, 0, 0),
+    ((0, 7, 0, 0),
+     (0, 7, 0, 0),    # 14
+     (7, 7, 0, 0),
      (0, 0, 0, 0)),    
     ((0, 1, 0, 0),
      (0, 1, 0, 0),    # 15
      (0, 1, 1, 0),    
      (0, 0, 0, 0)),
-    ((0, 1, 1, 0),
-     (0, 1, 1, 0),    # 16
+    ((0, 2, 2, 0),
+     (0, 2, 2, 0),    # 16
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-    ((0, 1, 1, 0),
-     (0, 0, 1, 0),    # 17
-     (0, 0, 1, 0),    
+    ((0, 3, 3, 0),
+     (0, 0, 3, 0),    # 17
+     (0, 0, 3, 0),    
      (0, 0, 0, 0)),
-    ((0, 1, 1, 0),
-     (0, 1, 0, 0),    # 18
-     (0, 1, 0, 0),    
+    ((0, 4, 4, 0),
+     (0, 4, 0, 0),    # 18
+     (0, 4, 0, 0),    
      (0, 0, 0, 0)),
-    ((0, 0, 1, 0),
-     (0, 1, 1, 0),    # 19
-     (0, 0, 1, 0),    
+    ((0, 0, 5, 0),
+     (0, 5, 5, 0),    # 19
+     (0, 0, 5, 0),    
      (0, 0, 0, 0)),
-    ((0, 1, 0, 0),
-     (0, 1, 1, 0),    # 20
-     (0, 1, 0, 0),    
+    ((0, 6, 0, 0),
+     (0, 6, 6, 0),    # 20
+     (0, 6, 0, 0),    
+     (0, 0, 0, 0)),
+    ((1, 1, 1, 0),
+     (0, 0, 0, 0),    # 21
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
+    ((3, 3, 3, 0),
+     (0, 0, 3, 0),    # 21
+     (0, 0, 0, 0),    
      (0, 0, 0, 0)),
 ) 
 
@@ -183,8 +204,8 @@ class Borad():
     def get_rect(self, rect):
         self.rect = rect
 
-    def draw_borad(self):
-        block = pygame.draw.rect(screen, (0, 0, 0), (self.xpos, self.ypos, FILED_PIECE_SIZE, FILED_PIECE_SIZE), self.line)
+    def draw_borad(self, color):
+        block = pygame.draw.rect(screen, color, (self.xpos, self.ypos, FILED_PIECE_SIZE, FILED_PIECE_SIZE), self.line)
         return block
 
 class Block():
@@ -213,9 +234,6 @@ class Block():
 def set_filed():
     for i in range(FILED_HEIGHT):
         FILED2 = []
-        # if i == 3:
-        #     FILED2 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        # else:
         for j in range(FILED_WIDTH):
             FILED2.append(0)
         FILED.append(FILED2)  
@@ -225,13 +243,27 @@ def draw_filed():
     for y in range(FILED_HEIGHT):
         for x in range(FILED_WIDTH):
             val = FILED[y][x]
+            block_color = BLACK
             line_width = 1
             
-            # 해당 값이 0이 아니라면 검은색으로 색칠
+            # 해당 값이 0이 아니라면 색칠
             if val != 0:
                 line_width = 0
+                block_color = COLOR[val - 1]
             borad = Borad(FILED_X_POS + y*FILED_PIECE_SIZE, FILED_Y_POS + x*FILED_PIECE_SIZE, line_width)
-            borad_rect = borad.draw_borad()
+            borad_rect = borad.draw_borad(block_color)
+            borad.get_rect(borad_rect)
+            borad_list.append(borad)
+def draw_filed2():
+    for y in range(FILED_HEIGHT):
+        for x in range(FILED_WIDTH):
+            val = FILED[y][x]
+            block_color = BLACK
+            line_width = 1
+            
+            # 해당 값이 0이 아니라면 색칠
+            borad = Borad(FILED_X_POS + y*FILED_PIECE_SIZE, FILED_Y_POS + x*FILED_PIECE_SIZE, line_width)
+            borad_rect = borad.draw_borad(block_color)
             borad.get_rect(borad_rect)
             borad_list.append(borad)
             
@@ -250,13 +282,15 @@ def draw_block():
             for x in range(block_width):
                 if blocks[val][y][x] == 0:
                     continue
+                else:
+                    block_color = blocks[val][y][x]
                 block = Block(
                     FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*3.5) + 70, 
                     FILED_PIECE_SIZE*y + block_y_pos + (FILED_PIECE_SIZE*block_height / 2), 
                     idx, val, (x, y))
-                color = GRAY
-                if count == 1 and block.id == block_id:
-                    color = BLACK
+                color = COLOR[block_color - 1]
+                # if count == 1 and block.id == block_id:
+                #     color = BLACK
                 block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, color)
                 block.get_rect(block_rect)
                 block_list.append(block)
@@ -278,7 +312,7 @@ def size(num):
     block_result = []
     for y in range(len(blocks[num])):
         for x in range(len(blocks[num][y])):
-            if blocks[num][y][x] == 1:
+            if blocks[num][y][x] != 0:
                 block_result.append((x, y))
     min_x, min_y = block_width - 1, block_width - 1
     max_x, max_y = 0, 0
@@ -355,6 +389,8 @@ while running:
                 click_block_list = block.list
                 block_id = block.id
                 block_num = block.num
+                block_color = blocks[block_num][click_block_list[1]][click_block_list[0]]
+
 
 
     if event.type == pygame.MOUSEMOTION:
@@ -364,6 +400,7 @@ while running:
 
 
     if md and event.type == pygame.MOUSEBUTTONUP:
+        # print(block_color)
         # 블럭의 위치 정보
         borad_rect = Rect(FILED_X_POS, FILED_Y_POS, FILED_PIECE_SIZE*10, FILED_PIECE_SIZE*10)
             
@@ -403,7 +440,7 @@ while running:
                         for x in range((last_x - start_x) + 1):
                             if blocks[block_num][block_size[2] + y][block_size[0] + x] == 0:
                                 continue
-                            if FILED[start_x + x][start_y + y] == 1:
+                            if FILED[start_x + x][start_y + y] != 0:
                                 overlapping = True
                                 filed_piece_list.clear()
                                 break
@@ -412,9 +449,10 @@ while running:
                             continue
                         break
 
+                    # print(filed_piece_list, block_color)
                     if not overlapping:
                         for filed in filed_piece_list:
-                            FILED[filed[0]][filed[1]] = 1
+                            FILED[filed[0]][filed[1]] = block_color
                             
                         for block in block_list:
                             if block.id == block_id:
@@ -435,10 +473,11 @@ while running:
             block_num = 100
             click_block = 0
             click_block_list = 0
+            block_color = 100
         md = False
     
     # 배경색 칠하기
-    screen.fill((255, 255, 255))
+    screen.fill(WHITE)
     screen.blit(logo, (logo_xpos, logo_ypos))
 
 
@@ -454,6 +493,7 @@ while running:
 
     # 게임판이랑 도형 그리기 
     draw_filed()
+    draw_filed2()
     draw_block()
 
     # 한줄이 채워지면 채워진 줄 인덱스를 저장
@@ -463,10 +503,10 @@ while running:
         y_count = 0
         x_count = 0
         for x in range(FILED_WIDTH):
-            if FILED[y][x] == 1:
+            if FILED[y][x] != 0:
                 y_count += 1
 
-            if FILED[x][y] == 1:
+            if FILED[x][y] != 0:
                 x_count += 1
             if x_count >= FILED_WIDTH:
                 line_x.append(y)
@@ -483,7 +523,17 @@ while running:
             for lix in line_x:
                 if x == lix:
                     FILED[y][x] = 0
-    score += 10*(len(line_x) + len(line_y))
+
+    line_len = len(line_x) + len(line_y)
+    if line_len == 1:
+        score += 10
+    elif line_len == 2:
+        score += 25
+    elif line_len == 3:
+        score += 45
+    elif line_len >= 4:
+        score += 60
+        
 
     # 현재 점수 나타내기
     total_score = game_font.render("Score: %s" % (score), True, (0, 0, 0))
@@ -491,7 +541,6 @@ while running:
 
     # running = False
     pygame.display.update()
-
 
 # 게임 오버 메세지
 msg = game_over_font.render(game_result, True, (255, 0, 0))
@@ -501,5 +550,7 @@ pygame.display.update()
 
 # 2초 대기
 pygame.time.delay(2000)
+print("게임 오버!")
+print("총 점수: ",  score)
 
 pygame.quit()
