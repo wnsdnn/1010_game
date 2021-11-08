@@ -18,16 +18,18 @@ with open("C:/Users/User/Desktop/1010_game/js/record.json") as json_file:
         if best_score <= score:
             best_score = score
 
-level = 0
+level = 1
+level_up = 0
 
 screen_width = 600
 screen_height = 790
 screen = pygame.display.set_mode((screen_width, screen_height)) 
 screen_rect = screen.get_rect()
 
-game_font = pygame.font.Font(None, 40)
+game_score_font = pygame.font.Font(None, 40)
 game_over_font = pygame.font.Font(None, 80)
 best_score_font = pygame.font.Font(None, 27)
+level_font = pygame.font.Font(None, 32)
 
 pygame.display.set_caption("1010 game")
 
@@ -115,41 +117,9 @@ blocks = (
      (0, 0, 0, 0),    # 0
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-    ((0, 0, 1, 0),     
-     (0, 0, 1, 0),    # 1
-     (1, 1, 1, 0),
-     (0, 0, 0, 0)),    
-    ((2, 2, 2, 2),
-     (0, 0, 0, 0),    # 2
-     (0, 0, 0, 0),    
-     (0, 0, 0, 0)),
-    ((3, 3, 3, 0),    
-     (3, 3, 3, 0),    # 3
-     (3, 3, 3, 0),    
-     (0, 0, 0, 0)),
-    ((4, 4, 4, 0),
-     (0, 0, 4, 0),    # 4
-     (0, 0, 4, 0),    
-     (0, 0, 0, 0)),
-    ((5, 0, 0, 0),   
-     (5, 0, 0, 0),    # 5
-     (5, 5, 5, 0),
-     (0, 0, 0, 0)),    
-    ((0, 6, 0, 0),
-     (0, 6, 0, 0),    # 6
-     (0, 6, 0, 0),    
-     (0, 6, 0, 0)),
     ((0, 7, 7, 0),
      (0, 0, 0, 0),    # 7
      (0, 0, 0, 0),    
-     (0, 0, 0, 0)),
-    ((0, 1, 0, 0),
-     (0, 0, 0, 0),    # 8
-     (0, 0, 0, 0),    
-     (0, 0, 0, 0)),
-    ((0, 2, 0, 0),
-     (2, 2, 2, 0),    # 9
-     (0, 2, 0, 0),    
      (0, 0, 0, 0)),
     ((0, 3, 3, 0),
      (0, 3, 0, 0),    # 10
@@ -159,25 +129,50 @@ blocks = (
      (0, 0, 4, 0),    # 11
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-    ((5, 5, 5, 0),
-     (0, 5, 0, 0),    # 12
+    ((0, 2, 2, 0),
+     (0, 2, 2, 0),    # 16
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
     ((0, 6, 0, 0),
      (6, 6, 6, 0),    # 13
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
+    ((1, 1, 1, 0),
+     (0, 0, 0, 0),    # 21
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
+    ((0, 2, 0, 0),
+     (0, 2, 0, 0),    # 22
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
+)
+
+level2 = (
+    ((2, 2, 2, 2),
+     (0, 0, 0, 0),    # 2
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
+    ((0, 6, 0, 0),
+     (0, 6, 0, 0),    # 6
+     (0, 6, 0, 0),    
+     (0, 6, 0, 0)),
+    ((0, 1, 0, 0),
+     (0, 0, 0, 0),    # 8
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
+)
+level3 = (
+    ((3, 3, 3, 0),
+     (0, 0, 3, 0),    # 21
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
     ((0, 7, 0, 0),
      (0, 7, 0, 0),    # 14
      (7, 7, 0, 0),
-     (0, 0, 0, 0)),    
+     (0, 0, 0, 0)), 
     ((0, 1, 0, 0),
      (0, 1, 0, 0),    # 15
      (0, 1, 1, 0),    
-     (0, 0, 0, 0)),
-    ((0, 2, 2, 0),
-     (0, 2, 2, 0),    # 16
-     (0, 0, 0, 0),    
      (0, 0, 0, 0)),
     ((0, 3, 3, 0),
      (0, 0, 3, 0),    # 17
@@ -187,6 +182,34 @@ blocks = (
      (0, 4, 0, 0),    # 18
      (0, 4, 0, 0),    
      (0, 0, 0, 0)),
+)
+level4 = (
+    ((0, 0, 1, 0),     
+     (0, 0, 1, 0),    # 1
+     (1, 1, 1, 0),
+     (0, 0, 0, 0)),
+    ((4, 4, 4, 0),
+     (0, 0, 4, 0),    # 4
+     (0, 0, 4, 0),    
+     (0, 0, 0, 0)),
+    ((5, 0, 0, 0),   
+     (5, 0, 0, 0),    # 5
+     (5, 5, 5, 0),
+     (0, 0, 0, 0)), 
+    ((3, 3, 3, 0),    
+     (3, 3, 3, 0),    # 3
+     (3, 3, 3, 0),    
+     (0, 0, 0, 0)),
+)
+level5 = (
+    ((0, 2, 0, 0),
+     (2, 2, 2, 0),    # 9
+     (0, 2, 0, 0),    
+     (0, 0, 0, 0)),
+    ((5, 5, 5, 0),
+     (0, 5, 0, 0),    # 12
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
     ((0, 0, 5, 0),
      (0, 5, 5, 0),    # 19
      (0, 0, 5, 0),    
@@ -195,15 +218,7 @@ blocks = (
      (0, 6, 6, 0),    # 20
      (0, 6, 0, 0),    
      (0, 0, 0, 0)),
-    ((1, 1, 1, 0),
-     (0, 0, 0, 0),    # 21
-     (0, 0, 0, 0),    
-     (0, 0, 0, 0)),
-    ((3, 3, 3, 0),
-     (0, 0, 3, 0),    # 21
-     (0, 0, 0, 0),    
-     (0, 0, 0, 0)),
-) 
+)
 
 # 도형들 만드는 클래스
 class Borad():
@@ -299,7 +314,7 @@ def draw_block():
                 block_y_len = block_size[3] - block_size[2] + 1
 
                 block = Block(
-                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*4) + idx*15 + 30, 
+                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*4) + idx*15 + 25, 
                     FILED_PIECE_SIZE*y + block_y_pos + ((FILED_PIECE_SIZE*(4 - block_y_len)) / 2 + 30),
                     idx, val, (x, y))
                 color = COLOR[block_color - 1]
@@ -317,7 +332,7 @@ def draw_block2():
                 block_y_len = block_size[3] - block_size[2] + 1
 
                 block = Block(
-                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*4) + idx*15 + 30, 
+                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*4) + idx*15 + 25, 
                     FILED_PIECE_SIZE*y + block_y_pos + ((FILED_PIECE_SIZE*(4 - block_y_len)) /2 + 30), 
                     idx, val, (x, y))
                 block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, (0, 0, 0), 1)
@@ -395,6 +410,24 @@ set_block()
 while running:
     dt = clock.tick(60)
     running = gameover()
+
+    if score >= 50 and level_up == 0:
+        level = 2
+        blocks += level2
+        level_up += 1
+    elif score >= 150 and level_up == 1:
+        level = 3
+        blocks += level3
+        level_up += 1
+    elif score >= 250 and level_up == 2:
+        level = 4
+        blocks += level4
+        level_up += 1
+    elif score >= 400 and level_up == 3:
+        level = 5
+        blocks += level5
+        level_up += 1
+        
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -565,13 +598,15 @@ while running:
         
 
     # 현재 점수 나타내기
-    total_score = game_font.render("Score: %s" % (score), True, (0, 0, 0))
+    total_score = game_score_font.render("Score: %s" % (score), True, (0, 0, 0))
     screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
 
     b_score = best_score_font.render("Best Score: %s" % (best_score), True, (0, 0, 0))
     screen.blit(b_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2 + 40))
 
-    # running = False
+    l_level = level_font.render("level: %s" % (level), True, (0, 0, 0))
+    screen.blit(l_level, (screen_width - 100 ,FILED_PIECE_SIZE/2))
+
     pygame.display.update()
 
 # 게임 오버 메세지
