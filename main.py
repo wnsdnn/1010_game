@@ -8,6 +8,18 @@ from pygame.rect import Rect
 pygame.init()
 
 # 전역 변수들
+best_score = 0
+
+with open("C:/Users/User/Desktop/1010_game/js/record.json") as json_file:
+    json_data = json.load(json_file)
+    score_obj = json_data["score"]
+
+    for score in score_obj:
+        if best_score <= score:
+            best_score = score
+
+level = 0
+
 screen_width = 600
 screen_height = 790
 screen = pygame.display.set_mode((screen_width, screen_height)) 
@@ -15,6 +27,7 @@ screen_rect = screen.get_rect()
 
 game_font = pygame.font.Font(None, 40)
 game_over_font = pygame.font.Font(None, 80)
+best_score_font = pygame.font.Font(None, 27)
 
 pygame.display.set_caption("1010 game")
 
@@ -40,9 +53,9 @@ FILED_PIECE_SIZE = 45  # 게임판에 들어가는 사각형의 크기
 
 # x, y 좌표
 FILED_X_POS = (screen_width / 2) - (FILED_PIECE_SIZE * FILED_WIDTH) / 2
-FILED_Y_POS = FILED_PIECE_SIZE * 2.2
+FILED_Y_POS = FILED_PIECE_SIZE * 2.3
 # 도형들의 y좌표
-block_y_pos = screen_height - 300
+block_y_pos = FILED_PIECE_SIZE*FILED_HEIGHT + FILED_Y_POS
 # 점수
 score = 0
 
@@ -106,10 +119,10 @@ blocks = (
      (0, 0, 1, 0),    # 1
      (1, 1, 1, 0),
      (0, 0, 0, 0)),    
-    ((0, 0, 0, 0),
+    ((2, 2, 2, 2),
      (0, 0, 0, 0),    # 2
      (0, 0, 0, 0),    
-     (2, 2, 2, 2)),
+     (0, 0, 0, 0)),
     ((3, 3, 3, 0),    
      (3, 3, 3, 0),    # 3
      (3, 3, 3, 0),    
@@ -118,27 +131,26 @@ blocks = (
      (0, 0, 4, 0),    # 4
      (0, 0, 4, 0),    
      (0, 0, 0, 0)),
-    ((0, 0, 0, 0),
+    ((5, 0, 0, 0),   
      (5, 0, 0, 0),    # 5
-     (5, 0, 0, 0),    
      (5, 5, 5, 0),
      (0, 0, 0, 0)),    
     ((0, 6, 0, 0),
      (0, 6, 0, 0),    # 6
      (0, 6, 0, 0),    
      (0, 6, 0, 0)),
-    ((0, 0, 0, 0),
+    ((0, 7, 7, 0),
      (0, 0, 0, 0),    # 7
      (0, 0, 0, 0),    
-     (0, 7, 7, 0)),
-    ((0, 0, 0, 0),
+     (0, 0, 0, 0)),
+    ((0, 1, 0, 0),
      (0, 0, 0, 0),    # 8
      (0, 0, 0, 0),    
-     (0, 1, 0, 0)),
+     (0, 0, 0, 0)),
     ((0, 2, 0, 0),
-     (0, 2, 0, 0),    # 9
+     (2, 2, 2, 0),    # 9
      (0, 2, 0, 0),    
-     (0, 2, 0, 0)),
+     (0, 0, 0, 0)),
     ((0, 3, 3, 0),
      (0, 3, 0, 0),    # 10
      (0, 0, 0, 0),    
@@ -272,7 +284,6 @@ def draw_filed2():
 def set_block():
     for i in range(block_len):
         random_block.append(random.randrange(1, len(blocks)))
-        # random_block.append(5)
 
 
 # 도형을 그려 넣는 함수
@@ -284,13 +295,14 @@ def draw_block():
                     continue
                 else:
                     block_color = blocks[val][y][x]
+                block_size, arr = size(val)
+                block_y_len = block_size[3] - block_size[2] + 1
+
                 block = Block(
-                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*3.5) + 70, 
-                    FILED_PIECE_SIZE*y + block_y_pos + (FILED_PIECE_SIZE*block_height / 2), 
+                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*4) + idx*15 + 30, 
+                    FILED_PIECE_SIZE*y + block_y_pos + ((FILED_PIECE_SIZE*(4 - block_y_len)) / 2 + 30),
                     idx, val, (x, y))
                 color = COLOR[block_color - 1]
-                # if count == 1 and block.id == block_id:
-                #     color = BLACK
                 block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, color, 0)
                 block.get_rect(block_rect)
                 block_list.append(block)
@@ -301,9 +313,12 @@ def draw_block2():
             for x in range(block_width):
                 if blocks[val][y][x] == 0:
                     continue
+                block_size, arr = size(val)
+                block_y_len = block_size[3] - block_size[2] + 1
+
                 block = Block(
-                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*3.5) + 70, 
-                    FILED_PIECE_SIZE*y + block_y_pos + (FILED_PIECE_SIZE*block_height / 2), 
+                    FILED_PIECE_SIZE*x + idx*(FILED_PIECE_SIZE*4) + idx*15 + 30, 
+                    FILED_PIECE_SIZE*y + block_y_pos + ((FILED_PIECE_SIZE*(4 - block_y_len)) /2 + 30), 
                     idx, val, (x, y))
                 block_rect = block.draw_block(mouse_to_x, mouse_to_y, block_id, (0, 0, 0), 1)
                 block.get_rect(block_rect)
@@ -506,9 +521,9 @@ while running:
 
     # 게임판이랑 도형 그리기 
     draw_filed()
-    draw_filed2()
+    draw_filed2()       # 게임판 위에 테두리만 있는 게임판 1개를 더 그려 테투리 만들기
     draw_block()
-    draw_block2()
+    draw_block2()       # 블럭 위에 테두리만 있는 똑같은 블럭 1개를 더 그려 테투리 만들기
 
     # 한줄이 채워지면 채워진 줄 인덱스를 저장
     line_y = []
@@ -553,6 +568,9 @@ while running:
     total_score = game_font.render("Score: %s" % (score), True, (0, 0, 0))
     screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
 
+    b_score = best_score_font.render("Best Score: %s" % (best_score), True, (0, 0, 0))
+    screen.blit(b_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2 + 40))
+
     # running = False
     pygame.display.update()
 
@@ -565,9 +583,10 @@ pygame.display.update()
 # 2초 대기
 pygame.time.delay(2000)
 
-
 print("게임 오버!")
-print("총 점수: ",  score)
+if score > best_score:
+    print("최고 점수 달성!!")
+print("총 점수: ", score)
 
 
 with open("C:/Users/User/Desktop/1010_game/js/record.json") as json_file:
@@ -576,14 +595,14 @@ with open("C:/Users/User/Desktop/1010_game/js/record.json") as json_file:
 
     score_arr = []
     score_arr.extend(score_obj)
-    score_arr.append(score)
+    if score != 0:
+        score_arr.append(score)
 
     sc_obj = dict()
     sc_obj["score"] = score_arr
     
     with open("C:/Users/User/Desktop/1010_game/js/record.json", 'w', encoding='utf-8') as make_file:
         json.dump(sc_obj, make_file, indent="\t")
-
-
+        
 
 pygame.quit()
