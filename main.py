@@ -1,3 +1,6 @@
+
+
+#-*- coding:utf-8 -*-
 import pygame
 import json
 import random
@@ -20,6 +23,8 @@ with open("C:/Users/User/Desktop/1010_game/js/record.json") as json_file:
 
 level = 1
 level_up = 0
+
+popup_on = False
 
 screen_width = 600
 screen_height = 790
@@ -160,12 +165,12 @@ level2 = (
      (0, 0, 0, 0),    # 8
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
-)
-level3 = (
     ((3, 3, 3, 0),
      (0, 0, 3, 0),    # 21
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
+)
+level3 = (
     ((0, 7, 0, 0),
      (0, 7, 0, 0),    # 14
      (7, 7, 0, 0),
@@ -281,6 +286,7 @@ def draw_filed():
             borad_rect = borad.draw_borad(block_color)
             borad.get_rect(borad_rect)
             borad_list.append(borad)
+
 def draw_filed2():
     for y in range(FILED_HEIGHT):
         for x in range(FILED_WIDTH):
@@ -310,7 +316,7 @@ def draw_block():
                     continue
                 else:
                     block_color = blocks[val][y][x]
-                block_size, arr = size(val)
+                block_size, arr = size(blocks, val)
                 block_y_len = block_size[3] - block_size[2] + 1
 
                 block = Block(
@@ -328,7 +334,7 @@ def draw_block2():
             for x in range(block_width):
                 if blocks[val][y][x] == 0:
                     continue
-                block_size, arr = size(val)
+                block_size, arr = size(blocks, val)
                 block_y_len = block_size[3] - block_size[2] + 1
 
                 block = Block(
@@ -351,7 +357,7 @@ def cordinates(num1, num2):
 
     return result
 
-def size(num):
+def size(blocks, num):
     block_result = []
     for y in range(len(blocks[num])):
         for x in range(len(blocks[num][y])):
@@ -377,7 +383,7 @@ def gameover():
     for idx, random_num in enumerate(random_block):
         if random_num == 0:
             continue
-        block_size, arr = size(random_num)
+        block_size, arr = size(blocks, random_num)
         block_y_len = block_size[3] - block_size[2] + 1
         block_x_len = block_size[1] - block_size[0] + 1
         
@@ -403,6 +409,64 @@ def gameover():
             return False
     return True
 
+def popup(thisList):
+    popup_width = screen_width - 80
+    popup_height = 330
+    popup_y_pos = screen_height / 2 - popup_height / 1.7
+    popup_x_pos = screen_width / 2 - popup_width / 2
+    
+    popup_font = pygame.font.Font(None, 55)
+    popup_font2 = pygame.font.Font(None, 35)
+    popup_font3 = pygame.font.Font(None, 25)
+
+    pygame.draw.rect(screen, (255, 255, 255), (
+        popup_x_pos, 
+        popup_y_pos,
+        popup_width, popup_height)
+    )
+    pygame.draw.rect(screen, (0, 0, 0), (
+        popup_x_pos, 
+        popup_y_pos,
+        popup_width, popup_height), 3
+    )
+
+    for idx, block in enumerate(thisList):
+        for y in range(len(block)): 
+            for x in range(len(block[y])):
+                color = 0
+                if block[y][x] != 0:
+                    color = COLOR[block[y][x] - 1]
+                else:
+                    continue
+                    
+                block_size, arr = size(thisList, idx)
+                block_y_len = block_size[3] - block_size[2] + 1
+
+                
+                pygame.draw.rect(screen, color, (
+                    35*x + idx*120 + 70,
+                    35*y + popup_y_pos + ((35*(4 - block_y_len)) / 2 + 80), 
+                    35, 35), 0
+                )
+                pygame.draw.rect(screen, (0, 0, 0), (
+                    35*x + idx*120 + 70,
+                    35*y + popup_y_pos + ((35*(4 - block_y_len)) / 2 + 80), 
+                    35, 35), 1
+                )
+            
+
+    popup_title = popup_font.render("Level Up!", True, (255, 0, 0))
+    popup_content = popup_font2.render("These blocks were added.", True, (0, 0, 0))
+    popup_content2 = popup_font3.render("Click anywhere", True, (128, 128, 128))
+    popup_title_rect = popup_title.get_rect()
+    popup_content_rect = popup_content.get_rect()
+    popup_content_rect2 = popup_content2.get_rect()
+    screen.blit(popup_title, (screen_width / 2 - popup_title_rect[2] / 2 , popup_y_pos + 20))
+    screen.blit(popup_content, (screen_width / 2 - popup_content_rect[2] / 2 , popup_y_pos + (popup_height - 75)))
+    screen.blit(popup_content2, (screen_width / 2 - popup_content_rect2[2] / 2 , popup_y_pos + (popup_height - 45)))
+
+
+
 # 게임 실행
 set_filed()
 set_block()
@@ -410,25 +474,7 @@ set_block()
 while running:
     dt = clock.tick(60)
     running = gameover()
-
-    if score >= 50 and level_up == 0:
-        level = 2
-        blocks += level2
-        level_up += 1
-    elif score >= 150 and level_up == 1:
-        level = 3
-        blocks += level3
-        level_up += 1
-    elif score >= 250 and level_up == 2:
-        level = 4
-        blocks += level4
-        level_up += 1
-    elif score >= 400 and level_up == 3:
-        level = 5
-        blocks += level5
-        level_up += 1
-        
-
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_result = "QUIT"
@@ -436,6 +482,9 @@ while running:
 
     # 마우스 이벤트
     if event.type == pygame.MOUSEBUTTONDOWN:
+        if popup_on:
+            popup_on = False
+
         if count == 0:
             start_to_x = pygame.mouse.get_pos()[0]
             start_to_y = pygame.mouse.get_pos()[1]
@@ -459,7 +508,6 @@ while running:
             mouse_to_x = pygame.mouse.get_pos()[0] - start_to_x
             mouse_to_y = pygame.mouse.get_pos()[1] - start_to_y
 
-
     if md and event.type == pygame.MOUSEBUTTONUP:
         # print(block_color)
         # 블럭의 위치 정보
@@ -481,7 +529,7 @@ while running:
 
             # min_x, max_x, min_y, max_y
             if block_num != 100:
-                block_size, arr = size(block_num)
+                block_size, arr = size(blocks, block_num)
 
             if click_block_list != 0 and block_x <= FILED_HEIGHT - 1 and block_y <= FILED_HEIGHT - 1 and block_x >= 0 and block_y >= 0:
                 # 게임판에 그릴 도형의 시작 위치
@@ -595,7 +643,37 @@ while running:
         score += 45
     elif line_len >= 4:
         score += 60
-        
+
+
+    if score >= 1 and level_up == 0:
+        level = 2
+        blocks += level2
+        popup_on = True
+        level_up += 1
+    elif score >= 150 and level_up == 1:
+        level = 3   
+        popup_on = True
+        blocks += level3
+        level_up += 1
+    elif score >= 250 and level_up == 2:
+        level = 4
+        popup_on = True
+        blocks += level4
+        level_up += 1
+    elif score >= 400 and level_up == 3:
+        level = 5
+        popup_on = True
+        blocks += level5
+        level_up += 1
+
+    if level == 2 and popup_on:
+        popup(level2)
+    elif level == 3 and popup_on:
+        popup(level3)
+    elif level == 4 and popup_on:
+        popup(level4)
+    elif level == 5 and popup_on:
+        popup(level5)
 
     # 현재 점수 나타내기
     total_score = game_score_font.render("Score: %s" % (score), True, (0, 0, 0))
@@ -606,6 +684,7 @@ while running:
 
     l_level = level_font.render("level: %s" % (level), True, (0, 0, 0))
     screen.blit(l_level, (screen_width - 100 ,FILED_PIECE_SIZE/2))
+
 
     pygame.display.update()
 
