@@ -1,6 +1,4 @@
-
-
-#-*- coding:utf-8 -*-
+# python 3.7.2
 import pygame
 import json
 import random
@@ -95,6 +93,10 @@ block_id = 100
 block_num = 100
 block_color = 100
 
+# 한줄 채워진 라인의 인덱스값을 넣어둘 리스트
+line_y = []
+line_x = []
+
 # 클릭한 도형의 사각형 인덱스 값
 click_block_list = 0
 
@@ -148,6 +150,10 @@ blocks = (
      (0, 0, 0, 0)),
     ((0, 2, 0, 0),
      (0, 2, 0, 0),    # 22
+     (0, 0, 0, 0),    
+     (0, 0, 0, 0)),
+    ((0, 0, 3, 0),
+     (0, 3, 3, 0),    # 23
      (0, 0, 0, 0),    
      (0, 0, 0, 0)),
 )
@@ -465,6 +471,46 @@ def popup(thisList):
     screen.blit(popup_content, (screen_width / 2 - popup_content_rect[2] / 2 , popup_y_pos + (popup_height - 75)))
     screen.blit(popup_content2, (screen_width / 2 - popup_content_rect2[2] / 2 , popup_y_pos + (popup_height - 45)))
 
+def fade(arr):
+    score_write()
+    for a in range(0, 30):
+        for data in arr:
+            fade = pygame.Surface((data[2], data[3]))
+            fade.fill((255, 255, 255))
+            fade.set_alpha(a)
+            screen.blit(fade, (data[0], data[1]))
+            pygame.draw.rect(screen, (0, 0, 0), (data[0], data[1], data[2], data[3]), 1)
+            pygame.display.update()
+
+def score_write():
+    total_score = game_score_font.render("Score: %s" % (score), True, (0, 0, 0))
+    screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
+
+    b_score = best_score_font.render("Best Score: %s" % (best_score), True, (0, 0, 0))
+    screen.blit(b_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2 + 40))
+
+    l_level = level_font.render("level: %s" % (level), True, (0, 0, 0))
+    screen.blit(l_level, (screen_width - 100 ,FILED_PIECE_SIZE/2))
+
+
+def set_line_del():
+
+    # 한줄이 채워지면 채워진 줄 인덱스를 저장
+    for y in range(FILED_HEIGHT):
+        y_count = 0
+        x_count = 0
+        for x in range(FILED_WIDTH):
+            if FILED[y][x] != 0:
+                y_count += 1
+
+            if FILED[x][y] != 0:
+                x_count += 1
+            if x_count >= FILED_WIDTH:
+                line_x.append(y)
+
+        if y_count >= FILED_HEIGHT:
+            line_y.append(y)
+    
 
 
 # 게임 실행
@@ -473,7 +519,6 @@ set_block()
 
 while running:
     dt = clock.tick(60)
-    running = gameover()
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -583,6 +628,10 @@ while running:
             click_block = 0
             click_block_list = 0
             block_color = 100
+            set_line_del()
+
+            if line_x != 0 or line_y != 0:
+                running = gameover()
         md = False
     
     # 배경색 칠하기
@@ -606,46 +655,44 @@ while running:
     draw_block()
     draw_block2()       # 블럭 위에 테두리만 있는 똑같은 블럭 1개를 더 그려 테투리 만들기
 
-    # 한줄이 채워지면 채워진 줄 인덱스를 저장
-    line_y = []
-    line_x = []
-    for y in range(FILED_HEIGHT):
-        y_count = 0
-        x_count = 0
-        for x in range(FILED_WIDTH):
-            if FILED[y][x] != 0:
-                y_count += 1
-
-            if FILED[x][y] != 0:
-                x_count += 1
-            if x_count >= FILED_WIDTH:
-                line_x.append(y)
-
-        if y_count >= FILED_HEIGHT:
-            line_y.append(y)
-
-    # 줄 인덱스에서 인덱스들을 가져와 지우기
-    for y in range(FILED_HEIGHT):
-        for liy in line_y:
-            if y == liy:
-                FILED[y] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        for x in range(FILED_WIDTH):
-            for lix in line_x:
-                if x == lix:
-                    FILED[y][x] = 0
-
-    line_len = len(line_x) + len(line_y)
-    if line_len == 1:
-        score += 10
-    elif line_len == 2:
-        score += 25
-    elif line_len == 3:
-        score += 45
-    elif line_len >= 4:
-        score += 60
+    if line_x != 0 or line_y != 0:
+        arr = []
+        # 줄 인덱스에서 인덱스들을 가져와 지우기
+        for y in range(FILED_HEIGHT):
+            for liy in line_y:
+                if y == liy:
+                    for x in range(FILED_HEIGHT):
+                        arr.append((FILED_X_POS+FILED_PIECE_SIZE*y, FILED_Y_POS+FILED_PIECE_SIZE*x, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
+        for x in range(FILED_HEIGHT):
+            for y in range(FILED_WIDTH):
+                for lix in line_x:
+                    if x == lix:
+                        arr.append((FILED_X_POS+FILED_PIECE_SIZE*y, FILED_Y_POS+FILED_PIECE_SIZE*x, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
+        fade(arr)
+        for y in range(FILED_HEIGHT):
+            for liy in line_y:
+                if y == liy:
+                    for x in range(FILED_HEIGHT):
+                        FILED[y] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for x in range(FILED_HEIGHT):
+            for y in range(FILED_WIDTH):
+                for lix in line_x:
+                    if x == lix:
+                        FILED[y][x] = 0
+        line_len = len(line_x) + len(line_y)
+        if line_len == 1:
+            score += 10
+        elif line_len == 2:
+            score += 25
+        elif line_len == 3:
+            score += 45
+        elif line_len >= 4:
+            score += 60
+        line_x = []
+        line_y = []
 
 
-    if score >= 1 and level_up == 0:
+    if score >= 50 and level_up == 0:
         level = 2
         blocks += level2
         popup_on = True
@@ -676,14 +723,7 @@ while running:
         popup(level5)
 
     # 현재 점수 나타내기
-    total_score = game_score_font.render("Score: %s" % (score), True, (0, 0, 0))
-    screen.blit(total_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2))
-
-    b_score = best_score_font.render("Best Score: %s" % (best_score), True, (0, 0, 0))
-    screen.blit(b_score, (FILED_PIECE_SIZE/2, FILED_PIECE_SIZE/2 + 40))
-
-    l_level = level_font.render("level: %s" % (level), True, (0, 0, 0))
-    screen.blit(l_level, (screen_width - 100 ,FILED_PIECE_SIZE/2))
+    score_write()
 
 
     pygame.display.update()
