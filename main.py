@@ -1,4 +1,5 @@
 # python 3.7.2
+# pip install pygame
 import pygame
 import json
 import random
@@ -87,15 +88,12 @@ block_cor = 0
 
 # 마우스 다운 되었있는지를 판별하는 함수
 md = False
+mu = False
 
 # 도형들의 인덱스 번호와 모양 정보가 있는 변수들
 block_id = 100
 block_num = 100
 block_color = 100
-
-# 한줄 채워진 라인의 인덱스값을 넣어둘 리스트
-line_y = []
-line_x = []
 
 # 클릭한 도형의 사각형 인덱스 값
 click_block_list = 0
@@ -494,8 +492,8 @@ def score_write():
 
 
 def set_line_del():
-
-    # 한줄이 채워지면 채워진 줄 인덱스를 저장
+    line_y = []
+    line_x = []
     for y in range(FILED_HEIGHT):
         y_count = 0
         x_count = 0
@@ -510,6 +508,36 @@ def set_line_del():
 
         if y_count >= FILED_HEIGHT:
             line_y.append(y)
+
+    return (line_x, line_y)
+
+def line_del(line_x, line_y):
+    if line_x != [] or line_y != []:
+        arr = []
+        for y in range(FILED_HEIGHT):
+            for liy in line_y:
+                if y == liy:
+                    for x in range(FILED_HEIGHT):
+                        arr.append((FILED_X_POS+FILED_PIECE_SIZE*y, FILED_Y_POS+FILED_PIECE_SIZE*x, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
+        for x in range(FILED_HEIGHT):
+            for y in range(FILED_WIDTH):
+                for lix in line_x:
+                    if x == lix:
+                        arr.append((FILED_X_POS+FILED_PIECE_SIZE*y, FILED_Y_POS+FILED_PIECE_SIZE*x, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
+        fade(arr)
+        for y in range(FILED_HEIGHT):
+            for liy in line_y:
+                if y == liy:
+                    for x in range(FILED_HEIGHT):
+                        FILED[y] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for x in range(FILED_HEIGHT):
+            for y in range(FILED_WIDTH):
+                for lix in line_x:
+                    if x == lix:
+                        FILED[y][x] = 0
+
+        result = len(line_x) + len(line_y)
+        return result
     
 
 
@@ -603,7 +631,6 @@ while running:
                             continue
                         break
 
-                    # print(filed_piece_list, block_color)
                     if not overlapping:
                         for filed in filed_piece_list:
                             FILED[filed[0]][filed[1]] = block_color
@@ -628,11 +655,8 @@ while running:
             click_block = 0
             click_block_list = 0
             block_color = 100
-            set_line_del()
-
-            if line_x != 0 or line_y != 0:
-                running = gameover()
         md = False
+        mu = True
     
     # 배경색 칠하기
     screen.fill(WHITE)
@@ -655,31 +679,10 @@ while running:
     draw_block()
     draw_block2()       # 블럭 위에 테두리만 있는 똑같은 블럭 1개를 더 그려 테투리 만들기
 
-    if line_x != 0 or line_y != 0:
-        arr = []
-        # 줄 인덱스에서 인덱스들을 가져와 지우기
-        for y in range(FILED_HEIGHT):
-            for liy in line_y:
-                if y == liy:
-                    for x in range(FILED_HEIGHT):
-                        arr.append((FILED_X_POS+FILED_PIECE_SIZE*y, FILED_Y_POS+FILED_PIECE_SIZE*x, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
-        for x in range(FILED_HEIGHT):
-            for y in range(FILED_WIDTH):
-                for lix in line_x:
-                    if x == lix:
-                        arr.append((FILED_X_POS+FILED_PIECE_SIZE*y, FILED_Y_POS+FILED_PIECE_SIZE*x, FILED_PIECE_SIZE, FILED_PIECE_SIZE))
-        fade(arr)
-        for y in range(FILED_HEIGHT):
-            for liy in line_y:
-                if y == liy:
-                    for x in range(FILED_HEIGHT):
-                        FILED[y] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        for x in range(FILED_HEIGHT):
-            for y in range(FILED_WIDTH):
-                for lix in line_x:
-                    if x == lix:
-                        FILED[y][x] = 0
-        line_len = len(line_x) + len(line_y)
+    lines = set_line_del()
+    line_len = line_del(lines[0], lines[1])
+    
+    if line_len != None:
         if line_len == 1:
             score += 10
         elif line_len == 2:
@@ -688,8 +691,10 @@ while running:
             score += 45
         elif line_len >= 4:
             score += 60
-        line_x = []
-        line_y = []
+        
+    if mu:
+        running = gameover()
+        mu = False
 
 
     if score >= 50 and level_up == 0:
@@ -715,12 +720,16 @@ while running:
 
     if level == 2 and popup_on:
         popup(level2)
+        pygame.time.delay(5)
     elif level == 3 and popup_on:
         popup(level3)
+        pygame.time.delay(5)
     elif level == 4 and popup_on:
         popup(level4)
+        pygame.time.delay(5)
     elif level == 5 and popup_on:
         popup(level5)
+        pygame.time.delay(5)
 
     # 현재 점수 나타내기
     score_write()
